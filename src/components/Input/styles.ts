@@ -3,11 +3,26 @@ import styled, { css } from 'styled-components';
 interface IContainerProps {
   isFocused: boolean;
   isFilled: boolean;
+  isErrored: boolean;
 }
 
-export const Container = styled.div<IContainerProps>`
+export const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  label {
+    color: #6c6c80;
+    font-size: 14px;
+    line-height: 16px;
+    margin-bottom: 8px;
+  }
+`;
+
+export const ContainerInput = styled.div<IContainerProps>`
   display: flex;
   align-items: center;
+  margin-bottom: 24px;
 
   background: #fff;
   border-radius: 8px;
@@ -15,16 +30,18 @@ export const Container = styled.div<IContainerProps>`
   width: 100%;
   font-size: 16px;
 
-  & + div {
-    margin-top: 24px;
-  }
-
   h1 {
     margin-bottom: 40px;
     font-weight: 600;
     font-size: 36px;
     line-height: 36px;
   }
+
+  ${props =>
+    props.isErrored &&
+    css`
+      border: 2px solid #c53030;
+    `}
 
   ${props =>
     props.isFocused &&
