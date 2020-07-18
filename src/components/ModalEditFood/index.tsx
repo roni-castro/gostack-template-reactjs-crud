@@ -1,10 +1,12 @@
 import React, { useRef, useCallback } from 'react';
+import * as Yup from 'yup';
 
 import { FiCheckSquare } from 'react-icons/fi';
 import { FormHandles } from '@unform/core';
 import { Form } from './styles';
 import Modal from '../Modal';
 import Input from '../Input';
+import { mapValidationErrorToErrorObject } from '../../utils/validationErrorMapper';
 
 interface IFoodPlate {
   id: number;
@@ -39,21 +41,55 @@ const ModalEditFood: React.FC<IModalProps> = ({
 
   const handleSubmit = useCallback(
     async (data: IEditFoodData) => {
-      // EDIT A FOOD PLATE AND CLOSE THE MODAL
+      try {
+        formRef.current?.setErrors({});
+        const schema = Yup.object().shape({
+          image: Yup.string().required('Url da imagem é obrigatório').url(),
+          name: Yup.string().required('Nome é obrigatório'),
+          price: Yup.number().required().min(0.01),
+          description: Yup.string(),
+        });
+        await schema.validate(data, { abortEarly: false });
+        handleUpdateFood(data);
+      } catch (error) {
+        if (error instanceof Yup.ValidationError) {
+          const errors = mapValidationErrorToErrorObject(error);
+          formRef.current?.setErrors(errors);
+          return;
+        }
+      }
     },
-    [handleUpdateFood, setIsOpen],
+    [handleUpdateFood],
   );
 
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
       <Form ref={formRef} onSubmit={handleSubmit} initialData={editingFood}>
         <h1>Editar Prato</h1>
-        <Input name="image" placeholder="Cole o link aqui" />
+        <Input
+          name="image"
+          labelTitle="URL da imagem"
+          placeholder="Cole o link aqui"
+        />
 
-        <Input name="name" placeholder="Ex: Moda Italiana" />
-        <Input name="price" placeholder="Ex: 19.90" />
+        <Input
+          name="name"
+          labelTitle="Nome do prato"
+          placeholder="Ex: Moda Italiana"
+        />
+        <Input
+          name="price"
+          type="number"
+          step="0.01"
+          labelTitle="Preço"
+          placeholder="Ex: 19.90"
+        />
 
-        <Input name="description" placeholder="Descrição" />
+        <Input
+          name="description"
+          labelTitle="Descrição do prato"
+          placeholder="Descrição"
+        />
 
         <button type="submit" data-testid="edit-food-button">
           <div className="text">Editar Prato</div>
